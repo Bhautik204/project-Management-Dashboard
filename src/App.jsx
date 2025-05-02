@@ -13,6 +13,8 @@ import Tasks from "./pages/Tasks";
 import Trash from "./pages/Trash";
 import Users from "./pages/Users";
 import Dashboard from "./pages/dashboard";
+import Projects from "./pages/Projects";
+import BudgetMonitoring from "./pages/BudgetMonitoring";
 import { setOpenSidebar } from "./redux/slices/authSlice";
 
 function Layout() {
@@ -100,6 +102,8 @@ function App() {
           <Route index path='/' element={<Navigate to='/dashboard' />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/tasks' element={<Tasks />} />
+          <Route path='/projects' element={<Projects />} />
+          <Route path='/budget' element={<BudgetMonitoring />} />
           <Route path='/completed/:status' element={<Tasks />} />
           <Route path='/in-progress/:status' element={<Tasks />} />
           <Route path='/todo/:status' element={<Tasks />} />

@@ -6,7 +6,7 @@ import {
   MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
+import { FaTasks, FaTrashAlt, FaUsers, FaProjectDiagram, FaMoneyBillWave } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
@@ -19,9 +19,19 @@ const linkData = [
     icon: <MdDashboard />,
   },
   {
+    label: "Projects",
+    link: "projects",
+    icon: <FaProjectDiagram />,
+  },
+  {
     label: "Tasks",
     link: "tasks",
     icon: <FaTasks />,
+  },
+  {
+    label: "Budget",
+    link: "budget",
+    icon: <FaMoneyBillWave />,
   },
   {
     label: "Completed",

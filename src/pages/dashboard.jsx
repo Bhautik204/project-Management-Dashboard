@@ -6,7 +6,7 @@ import {
   MdKeyboardDoubleArrowUp,
 } from "react-icons/md";
 import { LuClipboardEdit } from "react-icons/lu";
-import { FaNewspaper, FaUsers } from "react-icons/fa";
+import { FaNewspaper, FaUsers, FaMoneyBillWave, FaProjectDiagram } from "react-icons/fa";
 import { FaArrowsToDot } from "react-icons/fa6";
 import moment from "moment";
 import { summary } from "../assets/data";
@@ -14,6 +14,72 @@ import clsx from "clsx";
 import { Chart } from "../components/Chart";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import UserInfo from "../components/UserInfo";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+// Sample data for sales analytics
+const salesData = [
+  { name: 'Jan', amount: 4000 },
+  { name: 'Feb', amount: 3000 },
+  { name: 'Mar', amount: 5000 },
+  { name: 'Apr', amount: 2780 },
+  { name: 'May', amount: 1890 },
+  { name: 'Jun', amount: 2390 },
+  { name: 'Jul', amount: 3490 },
+  { name: 'Aug', amount: 2000 },
+  { name: 'Sep', amount: 2780 },
+  { name: 'Oct', amount: 1890 },
+  { name: 'Nov', amount: 3578 },
+  { name: 'Dec', amount: 3900 },
+];
+
+// Sample data for projects
+const projects = [
+  {
+    id: 1,
+    name: "Website Redesign",
+    startDate: "2023-12-10",
+    endDate: "2024-03-15",
+    status: "in progress",
+    completion: 65,
+    budget: 12000,
+    spent: 7500
+  },
+  {
+    id: 2,
+    name: "Mobile App Development",
+    startDate: "2024-01-05",
+    endDate: "2024-05-20",
+    status: "in progress",
+    completion: 40,
+    budget: 25000,
+    spent: 8200
+  },
+  {
+    id: 3,
+    name: "Brand Identity Design",
+    startDate: "2023-11-15",
+    endDate: "2024-02-10",
+    status: "completed",
+    completion: 100,
+    budget: 5500,
+    spent: 5200
+  },
+  {
+    id: 4,
+    name: "E-commerce Integration",
+    startDate: "2024-02-01",
+    endDate: "2024-04-30",
+    status: "todo",
+    completion: 10,
+    budget: 18000,
+    spent: 1200
+  }
+];
+
+// Calculate total sales, budget and spent
+const totalSales = salesData.reduce((sum, item) => sum + item.amount, 0);
+const totalBudget = projects.reduce((sum, project) => sum + project.budget, 0);
+const totalSpent = projects.reduce((sum, project) => sum + project.spent, 0);
 
 const TaskTable = ({ tasks }) => {
   const ICONS = {
@@ -92,6 +158,100 @@ const TaskTable = ({ tasks }) => {
   );
 };
 
+const ProjectTable = () => {
+  const TableHeader = () => (
+    <thead className='border-b border-gray-300'>
+      <tr className='text-black text-left'>
+        <th className='py-2'>Project Name</th>
+        <th className='py-2'>Timeline</th>
+        <th className='py-2'>Status</th>
+        <th className='py-2'>Progress</th>
+        <th className='py-2 hidden lg:table-cell'>Budget</th>
+      </tr>
+    </thead>
+  );
+
+  const statusColors = {
+    completed: "bg-green-100 text-green-800",
+    "in progress": "bg-blue-100 text-blue-800",
+    todo: "bg-yellow-100 text-yellow-800"
+  };
+
+  const TableRow = ({ project }) => (
+    <tr className='border-b border-gray-300 text-gray-600 hover:bg-gray-300/10'>
+      <td className='py-3'>
+        <p className='text-base font-medium text-black'>{project.name}</p>
+      </td>
+      <td className='py-3'>
+        <div className='text-sm'>
+          <p>{moment(project.startDate).format('MMM D, YYYY')}</p>
+          <p>to {moment(project.endDate).format('MMM D, YYYY')}</p>
+        </div>
+      </td>
+      <td className='py-3'>
+        <span className={`px-2 py-1 rounded-full text-xs capitalize ${statusColors[project.status]}`}>
+          {project.status}
+        </span>
+      </td>
+      <td className='py-3'>
+        <div className='flex flex-col w-full max-w-[120px]'>
+          <div className='flex justify-between mb-1'>
+            <span className='text-xs'>{project.completion}%</span>
+          </div>
+          <div className='w-full bg-gray-200 rounded-full h-2'>
+            <div 
+              className='bg-blue-600 h-2 rounded-full' 
+              style={{ width: `${project.completion}%` }}
+            ></div>
+          </div>
+        </div>
+      </td>
+      <td className='py-3 hidden lg:table-cell'>
+        <div className='text-sm'>
+          <p>Budget: ${project.budget.toLocaleString()}</p>
+          <p>Spent: ${project.spent.toLocaleString()}</p>
+        </div>
+      </td>
+    </tr>
+  );
+
+  return (
+    <div className='w-full bg-white px-2 md:px-6 py-4 mt-8 shadow-md rounded'>
+      <h4 className='text-xl text-gray-600 font-semibold mb-4'>Projects Overview</h4>
+      <div className='overflow-x-auto'>
+        <table className='w-full'>
+          <TableHeader />
+          <tbody>
+            {projects.map((project) => (
+              <TableRow key={project.id} project={project} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const SalesChart = () => {
+  return (
+    <div className='w-full bg-white px-4 py-4 mt-8 shadow-md rounded'>
+      <h4 className='text-xl text-gray-600 font-semibold mb-2'>Sales Analytics</h4>
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart
+          data={salesData}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Area type="monotone" dataKey="amount" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const UserTable = ({ users }) => {
   const TableHeader = () => (
     <thead className='border-b border-gray-300 '>
@@ -165,17 +325,17 @@ const Dashboard = () => {
     },
     {
       _id: "3",
-      label: "TASK IN PROGRESS ",
-      total: totals["in progress"] || 0,
-      icon: <LuClipboardEdit />,
-      bg: "bg-[#f59e0b]",
+      label: "PROJECTS",
+      total: projects.length,
+      icon: <FaProjectDiagram />,
+      bg: "bg-[#be185d]",
     },
     {
       _id: "4",
-      label: "TODOS",
-      total: totals["todo"],
-      icon: <FaArrowsToDot />,
-      bg: "bg-[#be185d]" || 0,
+      label: "TOTAL SALES",
+      total: `$${(totalSales/1000).toFixed(1)}K`,
+      icon: <FaMoneyBillWave />,
+      bg: "bg-[#15803d]",
     },
   ];
 
@@ -185,7 +345,7 @@ const Dashboard = () => {
         <div className='h-full flex flex-1 flex-col justify-between'>
           <p className='text-base text-gray-600'>{label}</p>
           <span className='text-2xl font-semibold'>{count}</span>
-          <span className='text-sm text-gray-400'>{"110 last month"}</span>
+          <span className='text-sm text-gray-400'>{"Last updated today"}</span>
         </div>
 
         <div
@@ -199,28 +359,77 @@ const Dashboard = () => {
       </div>
     );
   };
+
+  // Budget summary cards
+  const budgetStats = [
+    {
+      label: "TOTAL BUDGET",
+      count: `$${(totalBudget/1000).toFixed(1)}K`,
+      bg: "bg-indigo-600",
+      icon: <FaMoneyBillWave />,
+    },
+    {
+      label: "TOTAL SPENT",
+      count: `$${(totalSpent/1000).toFixed(1)}K`,
+      bg: "bg-violet-600",
+      icon: <FaMoneyBillWave />,
+    },
+    {
+      label: "REMAINING",
+      count: `$${((totalBudget - totalSpent)/1000).toFixed(1)}K`,
+      bg: "bg-emerald-600",
+      icon: <FaMoneyBillWave />,
+    },
+    {
+      label: "SPENT PERCENT",
+      count: `${Math.round((totalSpent/totalBudget) * 100)}%`,
+      bg: "bg-amber-600",
+      icon: <FaMoneyBillWave />,
+    },
+  ];
+  
   return (
-    <div classNamee='h-full py-4'>
+    <div className='h-full py-4'>
       <div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
         {stats.map(({ icon, bg, label, total }, index) => (
           <Card key={index} icon={icon} bg={bg} label={label} count={total} />
         ))}
       </div>
 
-      <div className='w-full bg-white my-16 p-4 rounded shadow-sm'>
+      {/* Project Overview Section */}
+      <ProjectTable />
+
+      {/* Sales Analytics Section */}
+      <SalesChart />
+
+      {/* Budget Summary Section */}
+      <div className='mt-8 mb-8'>
+        <h4 className='text-xl text-gray-600 font-semibold mb-4'>Budget Monitoring</h4>
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
+          {budgetStats.map((stat, index) => (
+            <Card 
+              key={index} 
+              icon={stat.icon} 
+              bg={stat.bg} 
+              label={stat.label} 
+              count={stat.count} 
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className='w-full bg-white my-8 p-4 rounded shadow-sm'>
         <h4 className='text-xl text-gray-600 font-semibold'>
-          Chart by Priority
+          Task Priority Distribution
         </h4>
         <Chart />
       </div>
 
       <div className='w-full flex flex-col md:flex-row gap-4 2xl:gap-10 py-8'>
         {/* /left */}
-
         <TaskTable tasks={summary.last10Task} />
 
         {/* /right */}
-
         <UserTable users={summary.users} />
       </div>
     </div>
