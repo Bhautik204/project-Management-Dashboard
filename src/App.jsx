@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Fragment, useRef } from "react";
+import { Fragment, useRef, Suspense, lazy } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
@@ -12,14 +12,22 @@ import TaskDetails from "./pages/TaskDetails";
 import Tasks from "./pages/Tasks";
 import Trash from "./pages/Trash";
 import Users from "./pages/Users";
-import Dashboard from "./pages/dashboard";
-import Projects from "./pages/Projects";
-import BudgetMonitoring from "./pages/BudgetMonitoring";
 import { setOpenSidebar } from "./redux/slices/authSlice";
+
+// Lazy load heavy components
+const Dashboard = lazy(() => import("./pages/dashboard"));
+const Projects = lazy(() => import("./pages/Projects"));
+const BudgetMonitoring = lazy(() => import("./pages/BudgetMonitoring"));
+
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+);
 
 function Layout() {
   const { user } = useSelector((state) => state.auth);
-
   const location = useLocation();
 
   return user ? (
@@ -34,7 +42,9 @@ function Layout() {
         <Navbar />
 
         <div className='p-4 2xl:px-10'>
-          <Outlet />
+          <Suspense fallback={<LoadingFallback />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
     </div>

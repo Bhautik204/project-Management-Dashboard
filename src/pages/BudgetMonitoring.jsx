@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
-} from 'recharts';
+import React, { useState, Suspense, lazy } from 'react';
 import { FaArrowUp, FaArrowDown, FaCalendarAlt, FaFilter } from 'react-icons/fa';
 import Title from '../components/Title';
+
+// Lazy load heavy chart components
+const LineChart = lazy(() => import('recharts').then(module => ({ default: module.LineChart })));
+const BarChart = lazy(() => import('recharts').then(module => ({ default: module.BarChart })));
+const PieChart = lazy(() => import('recharts').then(module => ({ default: module.PieChart })));
+const Line = lazy(() => import('recharts').then(module => ({ default: module.Line })));
+const Bar = lazy(() => import('recharts').then(module => ({ default: module.Bar })));
+const Pie = lazy(() => import('recharts').then(module => ({ default: module.Pie })));
+const Cell = lazy(() => import('recharts').then(module => ({ default: module.Cell })));
+const XAxis = lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
+const YAxis = lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
+const CartesianGrid = lazy(() => import('recharts').then(module => ({ default: module.CartesianGrid })));
+const Tooltip = lazy(() => import('recharts').then(module => ({ default: module.Tooltip })));
+const Legend = lazy(() => import('recharts').then(module => ({ default: module.Legend })));
+const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
+
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-80">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+);
 
 // Sample budget data (this would be from API/Redux in production)
 const budgetData = [
@@ -204,28 +222,30 @@ const BudgetMonitoring = () => {
         <div className="lg:col-span-2 bg-white p-5 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-700 mb-4">Monthly Expenses</h3>
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={monthlyExpenses}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" stroke="#718096" />
-                <YAxis stroke="#718096" />
-                <Tooltip 
-                  formatter={(value) => [`$${value.toLocaleString()}`, 'Spent']}
-                  labelFormatter={(label) => `${label} ${new Date().getFullYear()}`}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="spent" 
-                  stroke="#4F46E5" 
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }} 
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<LoadingFallback />}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={monthlyExpenses}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" stroke="#718096" />
+                  <YAxis stroke="#718096" />
+                  <Tooltip 
+                    formatter={(value) => [`$${value.toLocaleString()}`, 'Spent']}
+                    labelFormatter={(label) => `${label} ${new Date().getFullYear()}`}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="spent" 
+                    stroke="#4F46E5" 
+                    strokeWidth={2}
+                    activeDot={{ r: 8 }} 
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Suspense>
           </div>
         </div>
         
@@ -233,25 +253,27 @@ const BudgetMonitoring = () => {
         <div className="bg-white p-5 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-700 mb-4">Spending by Category</h3>
           <div className="h-80 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categorySpending}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {categorySpending.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-              </PieChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<LoadingFallback />}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categorySpending}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {categorySpending.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                </PieChart>
+              </ResponsiveContainer>
+            </Suspense>
           </div>
         </div>
       </div>
@@ -320,20 +342,22 @@ const BudgetMonitoring = () => {
       <div className="mt-8 bg-white p-5 rounded-lg shadow">
         <h3 className="text-lg font-medium text-gray-700 mb-4">Budget vs Actual Spending</h3>
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={budgetData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="project" />
-              <YAxis />
-              <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-              <Legend />
-              <Bar dataKey="budgeted" name="Budget" fill="#8884d8" />
-              <Bar dataKey="spent" name="Actual" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<LoadingFallback />}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={budgetData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="project" />
+                <YAxis />
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                <Legend />
+                <Bar dataKey="budgeted" name="Budget" fill="#8884d8" />
+                <Bar dataKey="spent" name="Actual" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Suspense>
         </div>
       </div>
     </div>
